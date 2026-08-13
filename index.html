@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>當沖點位快速輸入</title>
+  <!-- 1. 引入 LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 12px; margin: 8px 0 16px; border: 1px solid #ccc; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
+    button { width: 100%; padding: 14px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>⚡ 極短線當沖點位</h2>
+  
+  <label>最高點：</label>
+  <input type="number" id="high" placeholder="例如：46109">
+
+  <label>最低點：</label>
+  <input type="number" id="low" placeholder="例如：45911">
+
+  <label>當前價（選填）：</label>
+  <input type="number" id="current" placeholder="例如：46065">
+
+  <button onclick="sendData()">送出計算</button>
+</div>
+
+<script>
+  // 2. 初始化 LIFF
+  liff.init({ liffId: "YOUR_LIFF_ID_HERE" }) // 填入你的 LIFF ID
+    .then(() => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+    })
+    .catch((err) => console.error("LIFF 初始化失敗", err));
+
+  // 3. 按下按鈕時，讓用戶的 LINE 聊天室自動傳送訊息
+  function sendData() {
+    const high = document.getElementById('high').value;
+    const low = document.getElementById('low').value;
+    const current = document.getElementById('current').value;
+
+    if (!high || !low) {
+      alert("請輸入最高點與最低點！");
+      return;
+    }
+
+    // 組合要傳送給 LINE 機器人的格式
+    let msg = `${high} ${low}`;
+    if (current) msg += ` ${current}`;
+
+    // 發送訊息回聊天室，然後自動關閉 LIFF 視窗
+    liff.sendMessages([
+      { type: 'text', text: msg }
+    ]).then(() => {
+      liff.closeWindow(); // 傳完自動關閉視窗，超順手！
+    }).catch((err) => {
+      alert('發送失敗：' + err);
+    });
+  }
+</script>
+
+</body>
+</html>
