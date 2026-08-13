@@ -31,17 +31,28 @@
 </div>
 
 <script>
-  // 2. 初始化 LIFF
-  liff.init({ liffId: "L2011098514-1xXU8Y1h" }) // 填入你的 LIFF ID
+  // 1. 初始化 LIFF
+  liff.init({ liffId: "2011098514-1xXU8Y1h" })
     .then(() => {
+      // 如果還沒登入，強制進行 LINE 登入
       if (!liff.isLoggedIn()) {
         liff.login();
       }
     })
-    .catch((err) => console.error("LIFF 初始化失敗", err));
+    .catch((err) => {
+      console.error("LIFF 初始化失敗", err);
+      alert("LIFF 初始化失敗，請重新開啟視窗");
+    });
 
-  // 3. 按下按鈕時，讓用戶的 LINE 聊天室自動傳送訊息
-  function sendData() {
+  // 2. 按下按鈕時的處理
+  async function sendData() {
+    // 檢查是否登入完成，若尚未登入則提示並執行登入
+    if (!liff.isLoggedIn()) {
+      alert("請先完成 LINE 登入授權！");
+      liff.login();
+      return;
+    }
+
     const high = document.getElementById('high').value;
     const low = document.getElementById('low').value;
     const current = document.getElementById('current').value;
@@ -51,18 +62,17 @@
       return;
     }
 
-    // 組合要傳送給 LINE 機器人的格式
+    // 組合訊息格式
     let msg = `${high} ${low}`;
     if (current) msg += ` ${current}`;
 
-    // 發送訊息回聊天室，然後自動關閉 LIFF 視窗
-    liff.sendMessages([
-      { type: 'text', text: msg }
-    ]).then(() => {
-      liff.closeWindow(); // 傳完自動關閉視窗，超順手！
-    }).catch((err) => {
-      alert('發送失敗：' + err);
-    });
+    try {
+      // 傳送訊息回聊天室
+      await liff.sendMessages([{ type: 'text', text: msg }]);
+      liff.closeWindow(); // 傳完自動關閉視窗
+    } catch (err) {
+      alert('發送失敗：' + err.message);
+    }
   }
 </script>
 
